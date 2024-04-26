@@ -20,7 +20,18 @@ if (ttc.includes(".")) {
 let montant1 = ttc.split('.')[0]
 let montant2 = ttc.split('.')[1]
 
-ttcL =   capitalizeFirstLetter( wn(montant1,{lang:lang}).toLowerCase() +" dirhams et " + wn(montant2,{lang:lang}).toLowerCase() +" centimes")
+if(montant2.length==2){
+  ttcL =   capitalizeFirstLetter( wn(montant1,{lang:lang}).toLowerCase() +" dirhams et " + wn(montant2,{lang:lang}).toLowerCase() +" centimes")
+}
+if(montant2.length==1){
+   montant2 = montant2+'0'
+   ttcL =   capitalizeFirstLetter( wn(montant1,{lang:lang}).toLowerCase() +" dirhams et " + wn(montant2,{lang:lang}).toLowerCase() +" centimes")
+ }
+
+
+
+
+
 
 }
 else{

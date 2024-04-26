@@ -10,14 +10,17 @@ let ttc =""
 
 let lang = 'fr'
 
-let montant = "179175"
+let montant = "1791,75"
 
 if (montant.includes(",")) {
 
 let montant1 = montant.split(',')[0]
 let montant2 = montant.split(',')[1]
 
-ttc = wn(montant1,{lang:lang}).toUpperCase() +" DIRHAMS ET " + wn(montant2,{lang:lang}).toUpperCase() +" CENTIMES"
+    
+
+
+
 }
 else{
 ttc = wn(montant,{lang:lang}).toUpperCase() +" DIRHAMS" 
