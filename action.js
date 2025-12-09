@@ -8,7 +8,7 @@ app.use(bodyParser.json());
 const server =http.createServer(app);
 //const initMondayClient = require('monday-sdk-js');
 const router =  require('./router')
-const {changeColumnValue, getColumnValue} = require('./services')
+//const {changeColumnValue, getColumnValue} = require('./services')
 
 app.use(router);
 /*
@@ -47,7 +47,7 @@ app.use(router);
 */
 
 
-server.listen(process.env.PORT|| 3800,function(){
-    console.log("express server running on 3800")
+server.listen(process.env.PORT|| 8282,function(){
+    console.log("express server running on 8282")
 })
 

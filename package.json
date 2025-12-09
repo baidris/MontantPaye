@@ -1,12 +1,13 @@
 {
-  "name": "matiass",
+  "name": "data MAGICIAN",
   "version": "1.0.0",
   "description": "",
   "main": "action.js",
   "scripts": {
-    "start": "nodemon action.js"
+    "start": "node action.js"
+    
   },
-  "author": "",
+  "author": "DATA MAGICIAN",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.4.5",
