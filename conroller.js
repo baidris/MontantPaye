@@ -9,16 +9,15 @@ async function executeAction(req, res) {
   try {
     const { inputFields } = payload;
     const {boardId,itemId, columnId, columnCRT1,columnCRT2,columnCRT3, columnDEPOT } = inputFields;
-    console.log(inputFields)
+    console.log("Input fIelds : ",inputFields)
     const criters = await mondayService.get_cin_tp(shortLivedToken, itemId, columnCRT1 , columnCRT2, columnCRT3);
     let crt1_col = criters[0].id
     let crt1_val = criters[0].text
     let crt2_col = criters[1].id
     let crt2_val = criters[1].text
-    console.log(crt1_col, crt1_val, crt2_col, crt2_val)
-    const rslt = await mondayService.getCumul2(shortLivedToken,boardId,columnId,crt1_col,crt1_val,crt2_col,crt2_val) 
-    console.log(rslt)  // token, brdId, itemId, columnDEPOT, value
-   // await mondayService.depot_cumul_SNF2(shortLivedToken,boardId,itemId,columnDEPOT,(rslt.tot).toString()) // rslt.tot.toString()
+    console.log("crt1_col: ",crt1_col," crt1_val: ", crt1_val," crt2_col: " ,crt2_col,"crt2_val: " ,crt2_val)
+    const rslt = await mondayService.getCumul2(shortLivedToken,boardId,columnId,crt1_col,crt1_val,crt2_col,crt2_val)
+    console.log(rslt)
     rslt.tab_ids.map(j=> {
         if(j == itemId){
                     mondayService.depot_cumul_SNF2(shortLivedToken,boardId,j,columnDEPOT,(rslt.tot).toString()) 
@@ -27,7 +26,76 @@ async function executeAction(req, res) {
                  mondayService.depot_cumul_SNF2(shortLivedToken,boardId,j,columnDEPOT,(0).toString())
                // console.log("no")
            }
-  })
+                        })
+
+    //STEP 2
+    const table2D = await mondayService.get_all_tp_cin(shortLivedToken,columnId,boardId,crt2_col, crt2_val,crt1_col)//Table2D
+    //console.log("table 2D from controleur", table2D)
+    const cmlTypObject = await mondayService.getCml_typeP(table2D)
+    //console.log("from controleur",cmlTypObject)
+    let ESPECE= null;let VERSEMENT= null ;let VIREMENT= null
+    for(const k in cmlTypObject){ 
+      if(k==="ESPECE"){ESPECE=cmlTypObject[k] }
+      if(k==="VIREMENT"){ VIREMENT =cmlTypObject[k]}
+      if(k==="VERSEMENT"){ VERSEMENT=cmlTypObject[k]}
+    }
+    console.log("ESPECE : ",ESPECE)
+    console.log("VERSEMENT : ",VERSEMENT)
+    console.log("VIREMENT : ",VIREMENT)
+
+    const plsTypeObject = await mondayService.getPulse_typeP(table2D)
+    console.log(plsTypeObject)
+
+
+    for(const k in plsTypeObject){ 
+      if(k==="ESPECE" && crt1_val!="ESPECE"){ 
+        plsTypeObject[k].forEach((item, index) => {
+           if(index==0){
+              mondayService.depot_cumul_SNF2(shortLivedToken,boardId,item,columnDEPOT,ESPECE.toString()) 
+           }
+           if(index!=0){
+              mondayService.depot_cumul_SNF2(shortLivedToken,boardId,item,columnDEPOT,"0") 
+           }
+               });
+            } 
+             if(k==="VERSEMENT" && crt1_val!="VERSEMENT"){ 
+        plsTypeObject[k].forEach((item, index) => {
+           if(index==0){
+              mondayService.depot_cumul_SNF2(shortLivedToken,boardId,item,columnDEPOT,VERSEMENT.toString()) 
+           }
+           if(index!=0){
+              mondayService.depot_cumul_SNF2(shortLivedToken,boardId,item,columnDEPOT,"0") 
+           }
+               });
+            } 
+              if(k==="VIREMENT" && crt1_val!="VIREMENT"){ 
+        plsTypeObject[k].forEach((item, index) => {
+           if(index==0){
+              mondayService.depot_cumul_SNF2(shortLivedToken,boardId,item,columnDEPOT,VIREMENT.toString()) 
+           }
+           if(index!=0){
+              mondayService.depot_cumul_SNF2(shortLivedToken,boardId,item,columnDEPOT,"0") 
+           }
+               });
+            } 
+    }
+    
+    // 
+    
+    //const rslt = await mondayService.getCumul2(shortLivedToken,boardId,columnId,crt1_col,crt1_val,crt2_col,crt2_val) 
+    //console.log(rslt)  // token, brdId, itemId, columnDEPOT, value
+   // ancienne await mondayService.depot_cumul_SNF2(shortLivedToken,boardId,itemId,columnDEPOT,(rslt.tot).toString()) // rslt.tot.toString()
+    /*
+   rslt.tab_ids.map(j=> {
+        if(j == itemId){
+                    mondayService.depot_cumul_SNF2(shortLivedToken,boardId,j,columnDEPOT,(rslt.tot).toString()) 
+            //console.log("yes")
+                }else{
+                 mondayService.depot_cumul_SNF2(shortLivedToken,boardId,j,columnDEPOT,(0).toString())
+               // console.log("no")
+           }
+                        }) */
+
     /*
     const cumul = await mondayService.getCumul(shortLivedToken, itemId, columnId, columnCRT1,columnCRT2,columnCRT3  );
     const criters = await mondayService.get_cin_tp(shortLivedToken, itemId,columnCRT1,columnCRT2,columnCRT3  );     

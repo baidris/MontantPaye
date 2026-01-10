@@ -1,6 +1,72 @@
 const initMondayClient = require('monday-sdk-js');
 
-const get_cin_tp = async (token, itemId,columnCRT1, columnCRT2, columnCRT3 ) => {
+const get_all_tp_cin = async (token,column_id,brdId,crt1_col,crt1_val,crt2_col) => {
+  try {
+    const mondayClient = initMondayClient();
+    mondayClient.setToken(token);
+
+      console.log(token)
+      console.log("PARAMS => ",column_id,brdId,crt1_col,crt1_val,crt2_col)
+    const query =
+     `query ($column_id:String!,$crt1_val: String, $brdId: ID!, $crt1_col: String!,$crt2_col: String!){ items_page_by_column_values(
+    board_id: $brdId
+    columns:
+    [{column_id: $crt1_col, column_values: [$crt1_val]}]
+  ) {
+    items {
+      id, column_values(ids:[$column_id, $crt1_col,$crt2_col]){id text}
+    }
+  }
+}`;
+    const variables = { column_id,brdId,crt1_col,crt1_val,crt2_col};
+
+    const response = await mondayClient.api(query, { variables });
+    let infos =[]
+    let resultat  = response.data.items_page_by_column_values.items 
+   // console.log("Resultat Final: ",resultat)
+    
+    const columns = ["id", ...resultat[0].column_values.map(c => c.id)];
+
+const table2D = [
+  columns,
+  ...resultat.map(item => [
+    item.id,
+    ...item.column_values.map(c => c.text)
+  ])
+];
+console.log("table 2D : ", table2D)
+
+//console.log(" cml typ piem   ", getCml_typeP(table2D))
+//console.log(" grp as object   ", getPulse_typeP(table2D))
+
+
+/*
+// unique tp
+const uniqueTypePaiement = [
+  ...new Set(
+    
+      resultat.map(item =>
+        item.column_values.find(col => col.id === "typepaiement")?.text
+      )
+      .filter(Boolean)
+  )
+];
+
+console.log(" tp unique : ", uniqueTypePaiement);
+uniqueTypePaiement.forEach(itm=>getCmlType(table2D,itm))
+*/
+   // infos.push(resultat.find(itm => itm.id == columnId).text)
+   // infos.push(resultat.find(itm => itm.id == columnBrd).text)
+   // infos.push(resultat.find(itm => itm.id == columnRechId).text)
+    // console.log("its okay !!" , response.data.items[0].column_values[0].text)
+    //  console.log("Tableau contient = ",infos[0]," ", infos[1], " ", infos[2],'=', columnRechId,"=", columnId)
+    return table2D // resultat //infos //resultat[0].text  //infos[0]   //response.data.items[0].column_values[0].text;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const get_unq_tp = async (token, itemId,columnCRT1, columnCRT2, columnCRT3 ) => {
   try {
     const mondayClient = initMondayClient();
     mondayClient.setToken(token);
@@ -24,6 +90,63 @@ const get_cin_tp = async (token, itemId,columnCRT1, columnCRT2, columnCRT3 ) => 
     console.error(err);
   }
 };
+
+
+const get_cin_tp = async (token, itemId,columnCRT1, columnCRT2, columnCRT3 ) => {// retourne tableau 2dim
+  try {
+    const mondayClient = initMondayClient();
+    mondayClient.setToken(token);
+
+      console.log(token)
+      console.log("PARAMS => ",itemId,  columnCRT1, columnCRT2, columnCRT3)
+    const query = `query( $itemId: [ID!],$columnCRT1:String!,$columnCRT2:String!,$columnCRT3:String!){ items (ids: $itemId) { column_values(ids:[$columnCRT1,$columnCRT2,$columnCRT3 ]) { id, text}}}`;
+    const variables = { itemId, columnCRT1, columnCRT2, columnCRT3};
+
+    const response = await mondayClient.api(query, { variables });
+    let infos =[]
+    let resultat  = response.data.items[0].column_values 
+    console.log(resultat)
+   // infos.push(resultat.find(itm => itm.id == columnId).text)
+   // infos.push(resultat.find(itm => itm.id == columnBrd).text)
+   // infos.push(resultat.find(itm => itm.id == columnRechId).text)
+    // console.log("its okay !!" , response.data.items[0].column_values[0].text)
+    //  console.log("Tableau contient = ",infos[0]," ", infos[1], " ", infos[2],'=', columnRechId,"=", columnId)
+    return resultat //infos //resultat[0].text  //infos[0]   //response.data.items[0].column_values[0].text;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const getCmlType = async(table2D,typaie)=>{//renvoie type paiement unK avec l ens des id lies au type:[{esp:[1,2,3]},...]
+  let cml = 0;
+   table2D.forEach(el => {
+    if (el[1] === typaie) {
+      cml += Number(el[2]);
+    }
+  });
+ console.log( typaie, "-----" , cml )
+  return cml;
+}
+
+//*
+const getCml_typeP = async(table2D)=> {// renvoie SEUL OBJECT TYP + CML {esp:3, vir:12}
+  return table2D.reduce((acc, [ , type, value ]) => {
+    acc[type] = (acc[type] || 0) + Number(value || 0);
+      return acc;
+  }, {});
+}
+
+//*
+const   getPulse_typeP = async(table2D) =>{//renvoie SEUL OBJECT type paiement unK avec l ens des id lies au type:{esp:[1,2,3],....}
+  return table2D.reduce((acc, [id, type]) => {
+    acc[type] = acc[type] || [];
+    acc[type].push(id);
+    
+    return acc;
+  }, {});
+}
+
+
 /*
 const getCumul = async (token, itemId, columnId, columnRechId, columnBrd) => {
   try {
@@ -291,5 +414,8 @@ module.exports = {
  // existeOuPas2,
  //changeColumnValue,
  getAllColumns,
+ get_all_tp_cin,
+ getCml_typeP,
+ getPulse_typeP
  //getColumnValue3
 };
